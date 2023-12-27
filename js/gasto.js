@@ -5,6 +5,7 @@ const gastosListado = document.querySelector('#gastos ul');
 eventListeners();
 function eventListeners() {
     document.addEventListener('DOMContentLoaded', preguntarPresupuesto);
+    formulario.addEventListener("submit",validandoFormulario);
 }
 //Classes
 class Presupuesto {
@@ -37,4 +38,8 @@ function preguntarPresupuesto(){
     }
     presupuesto = new Presupuesto(presupuestoUsuario);
     ui.mostrarPresupuesto(presupuesto);
+}
+function validandoFormulario(e){
+    e.preventDefault();
+    console.log("hola");
 }
