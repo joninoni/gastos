@@ -17,6 +17,9 @@ class Presupuesto {
         this.restante = Number(presupuesto),
         this.gastos =[]
     }
+    nuevoGasto(gasto){
+        this.gastos=[...this.gastos,gasto]
+    }
 }
 
 class UI{
@@ -46,6 +49,38 @@ class UI{
                 divError.remove();
             }, 3000);
         }  
+    }
+    mostrarGasto(gastos){
+       this.limpiarHtml();
+       gastos.forEach(gasto => {
+            const {cantidad,nombre,id}=gasto;
+
+            const li=document.createElement("li");
+            li.className="list-gruop-item d-flex justify-content-between align-items-center";
+            li.dataset.id=id;
+
+            const spanNombre=document.createElement("span");
+            spanNombre.textContent=nombre;
+
+            const spanCantidad =document.createElement("span");
+            spanCantidad.textContent=cantidad;
+            spanCantidad.classList.add("badge","badge-primary","badge-pill","ml-2");
+
+            const btnBorrar=document.createElement("button");
+            btnBorrar.textContent="Borrar";
+            btnBorrar.className="btn btn-danger borrar-gasto";
+            
+            li.appendChild(spanNombre);
+            li.appendChild(spanCantidad);
+            li.appendChild(btnBorrar);
+
+            gastosListado.appendChild(li);
+       });
+    }
+    limpiarHtml(){
+        while(gastosListado.firstChild){
+            gastosListado.removeChild(gastosListado.firstChild);
+        }
     }
 }
 
@@ -78,5 +113,16 @@ function validandoFormulario(e){
         ui.mostrarMensaje("gasto no valido","error")
         return;
     }
-    
+    // creando un objecto con los valores de los inputs
+    const gasto ={nombre,cantidad,id:Date.now()};
+    //pasar el objecto a la clase de presupuesto
+    presupuesto.nuevoGasto(gasto);
+    //mostrar mensaje de gasto agregado
+    ui.mostrarMensaje("Gasto agregado");
+    //resetear el formulario
+    formulario.reset();
+
+    const {gastos} =presupuesto;
+    //pasando el arreglo de gastos de la clase Presupuesto a la clase de UI
+    ui.mostrarGasto(gastos);
 }
