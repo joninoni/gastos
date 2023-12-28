@@ -19,6 +19,11 @@ class Presupuesto {
     }
     nuevoGasto(gasto){
         this.gastos=[...this.gastos,gasto]
+        this.calcularRestante();
+    }
+    calcularRestante(){
+        const gastado=this.gastos.reduce( (total,gasto) => total + gasto.cantidad,0);
+        this.restante =this.presupuesto - gastado;
     }
 }
 
@@ -29,8 +34,8 @@ class UI{
         document.querySelector("#restante").textContent=restante;
     }
     mostrarMensaje(mensaje,tipo){
-        const alerta=primario.querySelector(".alert");
-        if(alerta === null){
+        const alerta=primario.querySelector(".alerta");
+        if(!alerta){//mientras alerta no exista
             const divError=document.createElement("div");
             divError.classList.add("text-center","alert");        
             if(tipo ==="error"){
@@ -48,7 +53,7 @@ class UI{
                 //eliminando al mensaje
                 divError.remove();
             }, 3000);
-        }  
+        }
     }
     mostrarGasto(gastos){
        this.limpiarHtml();
@@ -77,6 +82,26 @@ class UI{
             gastosListado.appendChild(li);
        });
     }
+    actualizarRestante(restante){
+        document.querySelector("#restante").textContent=restante;
+    }
+    modificarColor(presupuestoObj){
+        const {presupuesto,restante}=presupuestoObj;
+
+        if ((presupuesto/4) > restante){
+            document.querySelector(".restante").classList.add("alert-danger");
+            document.querySelector(".restante").classList.remove("alert-success", "alert-warning");  
+           
+        }
+        else if(presupuesto/2 > restante){
+            document.querySelector(".restante").classList.add("alert-warning");
+            document.querySelector(".restante").classList.remove("alert-success");
+        }
+        if (restante <= 0) {
+            ui.mostrarMensaje("presupuesto superado","error");
+            formulario.querySelector('button[type="submit"]').disabled=true;
+        }
+    }
     limpiarHtml(){
         while(gastosListado.firstChild){
             gastosListado.removeChild(gastosListado.firstChild);
@@ -90,17 +115,18 @@ const ui = new UI;
 //Funciones
 function preguntarPresupuesto(){
     // const presupuestoUsuario =  Number(prompt('¿Cual es tu presupuesto?'));
-    const presupuestoUsuario = 50;
+   
     // if(presupuestoUsuario === ''||presupuestoUsuario === null||isNaN(presupuestoUsuario)||presupuestoUsuario<=0){
     //     window.location.reload();
     // }
+    const presupuestoUsuario =100;
     presupuesto = new Presupuesto(presupuestoUsuario);
     ui.mostrarPresupuesto(presupuesto);
 }
 function validandoFormulario(e){
     e.preventDefault();
     const nombre = document.querySelector("#gasto").value;
-    const cantidad = document.querySelector("#cantidad").value;
+    const cantidad = Number(document.querySelector("#cantidad").value);
     if (nombre ===""  || cantidad ==="") {
             ui.mostrarMensaje("No puede haber campos vacios","error");
             return;
@@ -122,7 +148,9 @@ function validandoFormulario(e){
     //resetear el formulario
     formulario.reset();
 
-    const {gastos} =presupuesto;
+    const {gastos,restante} =presupuesto;
     //pasando el arreglo de gastos de la clase Presupuesto a la clase de UI
     ui.mostrarGasto(gastos);
+    ui.actualizarRestante(restante);
+    ui.modificarColor(presupuesto);
 }
