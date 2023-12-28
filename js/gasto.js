@@ -1,7 +1,7 @@
 const formulario = document.getElementById('agregar-gasto');
 const gastosListado = document.querySelector('#gastos ul');
 const primario =document.querySelector(".primario");
-const regex = /^\d+(\.)?\d*$/;
+const regex = /^\d+(\.)?\d*$/;//solo permite numeros y un punto opcional
 
 
 // Eventos
@@ -24,6 +24,10 @@ class Presupuesto {
     calcularRestante(){
         const gastado=this.gastos.reduce( (total,gasto) => total + gasto.cantidad,0);
         this.restante =this.presupuesto - gastado;
+    }
+    eliminandoGasto(id){
+        this.gastos=this.gastos.filter(gasto => gasto.id !==id);
+        this.calcularRestante();
     }
 }
 
@@ -74,6 +78,9 @@ class UI{
             const btnBorrar=document.createElement("button");
             btnBorrar.textContent="Borrar";
             btnBorrar.className="btn btn-danger borrar-gasto";
+            btnBorrar.onclick = ()=> {
+                eliminarGasto(id);
+            }
             
             li.appendChild(spanNombre);
             li.appendChild(spanCantidad);
@@ -87,17 +94,24 @@ class UI{
     }
     modificarColor(presupuestoObj){
         const {presupuesto,restante}=presupuestoObj;
-
-        if ((presupuesto/4) > restante){
+        //son para cambiar los colores segun sea el restante
+        if((presupuesto/4) > restante){
+            document.querySelector(".restante").classList.remove("alert-success", "alert-warning"); 
             document.querySelector(".restante").classList.add("alert-danger");
-            document.querySelector(".restante").classList.remove("alert-success", "alert-warning");  
-           
         }
         else if(presupuesto/2 > restante){
-            document.querySelector(".restante").classList.add("alert-warning");
-            document.querySelector(".restante").classList.remove("alert-success");
+            document.querySelector(".restante").classList.remove("alert-success","alert-danger");
+            document.querySelector(".restante").classList.add("alert-warning")
         }
-        if (restante <= 0) {
+        else{
+            document.querySelector(".restante").classList.remove("alerta-danger","alert-warning");   
+            document.querySelector(".restante").classList.add("alert-success");
+        }
+         //para habilitar el boton de submit segun sea el restante
+        if(restante >= 0) {
+            formulario.querySelector('button[type="submit"]').disabled=false;
+        }
+        else{
             ui.mostrarMensaje("presupuesto superado","error");
             formulario.querySelector('button[type="submit"]').disabled=true;
         }
@@ -123,6 +137,7 @@ function preguntarPresupuesto(){
     presupuesto = new Presupuesto(presupuestoUsuario);
     ui.mostrarPresupuesto(presupuesto);
 }
+
 function validandoFormulario(e){
     e.preventDefault();
     const nombre = document.querySelector("#gasto").value;
@@ -150,7 +165,19 @@ function validandoFormulario(e){
 
     const {gastos,restante} =presupuesto;
     //pasando el arreglo de gastos de la clase Presupuesto a la clase de UI
-    ui.mostrarGasto(gastos);
+    ui.mostrarGasto(gastos);//muestra los gastos en el html
     ui.actualizarRestante(restante);
+    ui.modificarColor(presupuesto);
+}
+
+function eliminarGasto(id){
+    // elimina un gasto del objecto
+    presupuesto.eliminandoGasto(id);
+    const {gastos,restante}=presupuesto;
+    //elimina el gasto del html
+    ui.mostrarGasto(gastos);
+    //rembolsa la cantidad
+    ui.actualizarRestante(restante);
+    //vuelve a modificar el color segun sea el restante
     ui.modificarColor(presupuesto);
 }
