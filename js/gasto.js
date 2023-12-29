@@ -2,6 +2,7 @@ const formulario = document.getElementById('agregar-gasto');
 const gastosListado = document.querySelector('#gastos ul');
 const primario =document.querySelector(".primario");
 const regex = /^\d+(\.)?\d*$/;//solo permite numeros y un punto opcional
+let presupuestoUsuario;
 
 
 // Eventos
@@ -9,13 +10,20 @@ eventListeners();
 function eventListeners() {
     document.addEventListener('DOMContentLoaded', preguntarPresupuesto);
     formulario.addEventListener("submit",validandoFormulario);
+    document.addEventListener("DOMContentLoaded",()=>{
+        gastos=JSON.parse(localStorage.getItem("gastos"))||[];
+        ui.mostrarGasto(gastos);
+        const gastado =gastos.reduce((acc,total) => acc + total.cantidad,0);
+        presupuestoUsuario =presupuestoUsuario -gastado;
+        ui.actualizarRestante(presupuestoUsuario);
+    })
 }
 //Classes
 class Presupuesto {
     constructor(presupuesto){
         this.presupuesto = Number(presupuesto),
         this.restante = Number(presupuesto),
-        this.gastos =[]
+        this.gastos =[];
     }
     nuevoGasto(gasto){
         this.gastos=[...this.gastos,gasto]
@@ -88,6 +96,8 @@ class UI{
 
             gastosListado.appendChild(li);
        });
+        //sincronizando con localStorage
+        sincronizarStorage(gastos);
     }
     actualizarRestante(restante){
         document.querySelector("#restante").textContent=restante;
@@ -133,7 +143,7 @@ function preguntarPresupuesto(){
     // if(presupuestoUsuario === ''||presupuestoUsuario === null||isNaN(presupuestoUsuario)||presupuestoUsuario<=0){
     //     window.location.reload();
     // }
-    const presupuestoUsuario =100;
+    presupuestoUsuario =100;
     presupuesto = new Presupuesto(presupuestoUsuario);
     ui.mostrarPresupuesto(presupuesto);
 }
@@ -180,4 +190,7 @@ function eliminarGasto(id){
     ui.actualizarRestante(restante);
     //vuelve a modificar el color segun sea el restante
     ui.modificarColor(presupuesto);
+}
+function sincronizarStorage(gastos){
+    localStorage.setItem("gastos",JSON.stringify(gastos));
 }
